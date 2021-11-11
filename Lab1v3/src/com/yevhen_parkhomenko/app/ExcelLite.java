@@ -51,8 +51,6 @@ public class ExcelLite extends JFrame
     private JScrollPane scroll;
     private JTextField formula;
 
-    private JLabel label;
-
     private JButton calculateBtn;
     private JButton closeBtn;
     private JButton scene1Btn;
@@ -73,14 +71,37 @@ public class ExcelLite extends JFrame
     public ExcelLite() {
         super("Table");
 
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        int[] selectedCell = new int[]{0, 0};
+        formula = new JTextField();
+        JPanel formulaPanel = new JPanel();
+        formula.setPreferredSize(new Dimension(700, 20));
+        formulaPanel.add(formula);
+        getContentPane().add(formulaPanel, "South");
+
+
+        MouseListener tableMouseListener = new MouseAdapter()
+        {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int col = table1.columnAtPoint(e.getPoint());
+                int row = table1.rowAtPoint(e.getPoint());
+                selectedCell[0] = row;
+                selectedCell[1] = col;
+                formula.setText((String) formulas[selectedCell[0]][selectedCell[1]]);
+            }
+        };
+
         table1.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        //table1.setRowSelectionAllowed (false);
-       //table1.setColumnSelectionAllowed (false);
-        //table1.setRowSelectionAllowed(false);
-        table1.setPreferredScrollableViewportSize(table1.getPreferredSize());
+        table1.setRowSelectionAllowed(false);
+        table1.addMouseListener(tableMouseListener);
+        table1.setCellSelectionEnabled(true);
         table1.setFillsViewportHeight(true);
-        table1.setSelectionBackground (Color.white);
-        table1.setSelectionForeground (Color.blue);
+        table1.setSelectionBackground (Color.blue);
+        table1.setSelectionForeground (Color.yellow);
+
+
 
         for (int i = 0; i < rowCnt; i++) {
             for (int j = 0; j < colCnt; j++) {
@@ -88,7 +109,7 @@ public class ExcelLite extends JFrame
             }
         }
 
-        int[] selectedCell = new int[]{0, 0};
+
         ListModel rowHeaderNameStorage = new AbstractListModel() {
             String headers[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"
                     , "17", "18", "19", "20"};
@@ -102,8 +123,6 @@ public class ExcelLite extends JFrame
             }
         };
 
-        label = new JLabel();
-        label.setText("Pick a cell to edit");
 
         addRowBtn.addActionListener(new ActionListener() {
             @Override
@@ -171,19 +190,7 @@ public class ExcelLite extends JFrame
                 System.exit(0);
             }
         });
-        formula = new JTextField();
-        MouseListener tableMouseListener = new MouseAdapter()
-        {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                int col = table1.columnAtPoint(e.getPoint());
-                int row = table1.rowAtPoint(e.getPoint());
-                selectedCell[0] = row;
-                selectedCell[1] = col;
-                formula.setText((String) formulas[selectedCell[0]][selectedCell[1]]);
-                label.setText("Selected cell is " + (char)(Integer.valueOf('A') + col) + String.valueOf(row + 1));
-            }
-        };
+
         calculateBtn = new JButton("Calculate");
         calculateBtn.addActionListener(new ActionListener() {
             @Override
@@ -232,12 +239,13 @@ public class ExcelLite extends JFrame
                     }
                 });
                 Box contents1 = new Box(BoxLayout.Y_AXIS);
-                contents1.add(helpBtn);
-                contents1.add(scene2Btn);
-                contents1.add(closeBtn);
+                JPanel buttons1 = new JPanel();
+                buttons1.add(helpBtn);
+                buttons1.add(scene2Btn);
+                buttons1.add(closeBtn);
+                contents1.add(buttons1);
                 contents1.add(scroll);
-                contents1.add(label);
-                contents1.add(formula);
+                contents1.add(formulaPanel);
                 JPanel buttons = new JPanel();
                 buttons.add(calculateBtn);
                 buttons.add(addCollumnBtn);
@@ -248,6 +256,8 @@ public class ExcelLite extends JFrame
                 getContentPane().add(buttons, "South");
                 setSize(750, 350);
                 setVisible(true);
+                table1.setFillsViewportHeight(true);
+                table1.setPreferredScrollableViewportSize(table1.getPreferredSize());
             }
         });
         loadBtn = new JButton("Load");
@@ -262,6 +272,10 @@ public class ExcelLite extends JFrame
                         BufferedReader bi = new BufferedReader(new InputStreamReader(fin));
                         int rows = Integer.parseInt(bi.readLine());
                         int columns = Integer.parseInt(bi.readLine());
+                        if (rows<0 || rows>20 || columns<0 || columns>20){
+                            JOptionPane.showMessageDialog(null,"Something has corrupted the save");
+                            return;
+                        }
                         JOptionPane.showMessageDialog(null,"The load was successful");
                         for (int i = 0; i < rows; i++) {
                             for (int j = 0; j < columns; j++) {
@@ -270,8 +284,6 @@ public class ExcelLite extends JFrame
                         }
                         for (int i = 0; i < rows ; i++) {
                             for (int j = 0; j < columns; j++) {
-
-
                                 try {
                                     String temp = String.valueOf(formulas[i][j]);
                                     String cell = String.valueOf('A' + j) + String.valueOf(i + 1);
@@ -346,13 +358,7 @@ public class ExcelLite extends JFrame
                 JOptionPane.showMessageDialog(null, temp);
             }
         });
-        table1 = new JTable(tableModel);
-        table1.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
-        table1.addMouseListener(tableMouseListener);
 
-
-        //table1.setEnabled(false);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
         Box contents = new Box(BoxLayout.Y_AXIS);
         JList rowHeader = new JList(rowHeaderNameStorage);
         rowHeader.setFixedCellWidth(50);
@@ -374,5 +380,6 @@ public class ExcelLite extends JFrame
         new ExcelLite();
     }
 }
+
 
 
