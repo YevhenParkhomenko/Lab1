@@ -272,7 +272,7 @@ public class ExcelLite extends JFrame
                         BufferedReader bi = new BufferedReader(new InputStreamReader(fin));
                         int rows = Integer.parseInt(bi.readLine());
                         int columns = Integer.parseInt(bi.readLine());
-                        if (rows<0 || rows>20 || columns<0 || columns>20){
+                        if (rows < 1 || rows>20 || columns < 1 || columns > 20){
                             JOptionPane.showMessageDialog(null,"Something has corrupted the save");
                             return;
                         }
